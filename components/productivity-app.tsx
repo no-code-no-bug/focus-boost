@@ -116,11 +116,7 @@ const YouTubeBackground: React.FC<YouTubeBackgroundProps> = ({ videoId }) => (
 );
 
 const backgrounds: Background[] = [
-  { id: 'default', name: 'Default', value: 'bg-gradient-to-br from-gray-900 to-gray-800' },
-  { id: 'forest', name: 'Forest', value: 'bg-[url(/placeholder.svg?height=1080&width=1920)] bg-cover bg-center' },
-  { id: 'ocean', name: 'Ocean', value: 'bg-[url(/placeholder.svg?height=1080&width=1920)] bg-cover bg-center' },
-  { id: 'mountains', name: 'Mountains', value: 'bg-[url(/placeholder.svg?height=1080&width=1920)] bg-cover bg-center' },
-  { id: 'youtube', name: 'YouTube Video', value: 'youtube' },
+  { id: 'youtube', name: 'list background', value: 'youtube' },
 ];
 
 export function ProductivityAppComponent() {
@@ -128,9 +124,21 @@ export function ProductivityAppComponent() {
   const [newTask, setNewTask] = useState('');
   const { time, isActive, toggleTimer, resetTimer } = useTimer();
   const rain = useAudio('/music/rain.mp3', 0.7);
-  // const birds = useAudio('/music/birds.mp3', 0.7);
-  // const water = useAudio('/music/water.mp3', 0.7);
-  // const wind = useAudio('/music/wind.mp3', 0.7);
+  const birds = useAudio('/music/bird.mp3', 0.7);
+  const water = useAudio('/music/water.mp3', 0.7);
+  const wind = useAudio('/music/wind.mp3', 0.7);
+  const nature = useAudio('/music/nature.mp3', 0.7);
+  const wood = useAudio('/music/wood.mp3', 0.7);
+
+  const soundsList = [
+    { id: 'rain', name: 'Rain', audio: rain },
+    { id: 'birds', name: 'Birds', audio: birds },
+    { id: 'water', name: 'Water', audio: water },
+    { id: 'wind', name: 'Wind', audio: wind },
+    { id: 'nature', name: 'Nature', audio: nature },
+    { id: 'wood', name: 'Wood', audio: wood },
+  ];
+
   const [background, setBackground] = useState<Background>(backgrounds[0]);
   const [youtubeVideoId, setYoutubeVideoId] = useState('');
   const youtubeVideos: YouTubeVideo[] = [
@@ -141,6 +149,21 @@ export function ProductivityAppComponent() {
     { id: 'zhDwjnYZiCo', thumbnail: 'https://img.youtube.com/vi/zhDwjnYZiCo/hqdefault.jpg' },
   ];
   
+  const [selectedSound, setSelectedSound] = useState<string>('');
+
+  const handleSoundChange = (soundId: string) => {
+    const sound = soundsList.find((s) => s.id === soundId);
+    if (sound) {
+      // Dừng tất cả âm thanh trước khi phát âm thanh mới
+      soundsList.forEach((s) => {
+        if (s.audio.isPlaying) {
+          s.audio.togglePlay();
+        }
+      });
+      sound.audio.togglePlay(); // Phát âm thanh đã chọn
+      setSelectedSound(soundId);
+    }
+  };
   const addTask = (e: React.FormEvent) => {
     e.preventDefault();
     if (newTask.trim()) {
@@ -177,7 +200,6 @@ export function ProductivityAppComponent() {
         <YouTubeBackground videoId={youtubeVideoId} />
       )}
       <div className="max-w-4xl mx-auto relative z-10">
-        <h1 className="text-4xl font-bold mb-8 text-center">Productivity Oasis</h1>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-6">
@@ -231,55 +253,45 @@ export function ProductivityAppComponent() {
             <div className="bg-gray-800 bg-opacity-75 p-6 rounded-lg shadow-lg">
               <h2 className="text-2xl font-semibold mb-4">Ambient Sounds</h2>
               <div className="space-y-4">
-                {[
-                  { name: 'Rain', audio: rain },
-                  { name: 'Birds', audio: rain },
-                  { name: 'Water', audio: rain },
-                  { name: 'Wind', audio: rain },
-                ].map((sound) => (
-                  <div key={sound.name} className="flex items-center justify-between">
-                    <span>{sound.name}</span>
+              {[
+                { name: 'Rain', audio: rain },
+                { name: 'Birds', audio: birds },
+                { name: 'Water', audio: water },
+                { name: 'Wind', audio: wind },
+                { name: 'Nature', audio: nature },
+                { name: 'Wood', audio: wood },
+              ].map((sound) => (
+                <div key={sound.name} className="flex items-center justify-between">
+                  <span>{sound.name}</span>
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      size="sm"
+                      variant={sound.audio.isPlaying ? 'outline' : 'default'}
+                      onClick={sound.audio.togglePlay}
+                    >
+                      {sound.audio.isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                    </Button>
                     <div className="flex items-center space-x-2">
-                      <Button
-                        size="sm"
-                        variant={sound.audio.isPlaying ? 'outline' : 'default'}
-                        onClick={sound.audio.togglePlay}
-                      >
-                        {sound.audio.isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                      </Button>
-                      <div className="flex items-center space-x-2">
-                        <Volume2 className="h-4 w-4" />
-                        <Slider
-                          min={0}
-                          max={1}
-                          step={0.01}
-                          value={[sound.audio.volume]}
-                          onValueChange={(value) => sound.audio.adjustVolume(value[0])}
-                          aria-label={`${sound.name} volume`}
-                          className="w-24"
-                        />
-                      </div>
+                      <Volume2 className="h-4 w-4" />
+                      <Slider
+                        min={0}
+                        max={1}
+                        step={0.01}
+                        value={[sound.audio.volume]}
+                        onValueChange={(value) => sound.audio.adjustVolume(value[0])}
+                        aria-label={`${sound.name} volume`}
+                        className="w-24"
+                      />
                     </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
+            </div>
+
             </div>
 
             <div className="bg-gray-800 bg-opacity-75 p-6 rounded-lg shadow-lg">
               <h2 className="text-2xl font-semibold mb-4">Backgrounds</h2>
-              <Select onValueChange={handleBackgroundChange} defaultValue={background.id}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select background" />
-                </SelectTrigger>
-                <SelectContent>
-                  {backgrounds.map((bg) => (
-                    <SelectItem key={bg.id} value={bg.id}>
-                      {bg.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {background.id === 'youtube' && (
                 <Select
                   onValueChange={(value: string) => setYoutubeVideoId(value)}
                 >
@@ -294,7 +306,6 @@ export function ProductivityAppComponent() {
                     ))}
                   </SelectContent>
                 </Select>
-              )}
             </div>
           </div>
         </div>
