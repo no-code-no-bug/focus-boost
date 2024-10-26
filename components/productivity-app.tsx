@@ -5,15 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CheckCircle, Circle, Play, Pause, RefreshCcw } from 'lucide-react';
+import { CheckCircle, Circle, Play, Pause, RefreshCcw, Volume2 } from 'lucide-react';
 
 interface YouTubeVideo {
   id: string;
-  thumbnail: string; // Thay title thành thumbnail
+  thumbnail: string;
 }
 
 interface YouTubeBackgroundProps {
-  videoId: string; // Specify that videoId should be a string
+  videoId: string;
 }
 
 interface Task {
@@ -27,15 +27,7 @@ interface Background {
   value: string;
 }
 
-interface Props {
-  backgrounds: Background[];
-  rain: ReturnType<typeof useAudio>; // Type based on the hook return
-  birds: ReturnType<typeof useAudio>; // Type based on the hook return
-  water: ReturnType<typeof useAudio>; // Type based on the hook return
-  wind: ReturnType<typeof useAudio>; // Type based on the hook return
-}
-
-const useAudio = (src: string, initialVolume = 0.5) => {
+const useAudio = (src: string, initialVolume = 0.7) => {
   const [volume, setVolume] = useState(initialVolume);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -45,13 +37,20 @@ const useAudio = (src: string, initialVolume = 0.5) => {
       audioRef.current = new Audio(src);
       audioRef.current.loop = true;
       audioRef.current.volume = volume;
-      console.log('Audio initialized:', audioRef.current);
     }
     return () => {
-      audioRef.current?.pause();
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
     };
-  }, [src, volume]);
-  
+  }, [src]);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, [volume]);
 
   const togglePlay = () => {
     if (audioRef.current) {
@@ -65,12 +64,16 @@ const useAudio = (src: string, initialVolume = 0.5) => {
       setIsPlaying(!isPlaying);
     }
   };
-  
-  
 
-  return { volume, setVolume, isPlaying, togglePlay, audioRef };
+  const adjustVolume = (newVolume: number) => {
+    setVolume(newVolume);
+    if (audioRef.current) {
+      audioRef.current.volume = newVolume;
+    }
+  };
+
+  return { volume, adjustVolume, isPlaying, togglePlay };
 };
-
 
 const useTimer = (initialTime = 25 * 60) => {
   const [time, setTime] = useState(initialTime);
@@ -102,16 +105,14 @@ const useTimer = (initialTime = 25 * 60) => {
 
 const YouTubeBackground: React.FC<YouTubeBackgroundProps> = ({ videoId }) => (
   <div className="absolute inset-0 pointer-events-none overflow-hidden">
-  <iframe
-    src={`https://www.youtube.com/embed/${videoId}?autoplay=1&controls=0&showinfo=0&rel=0&loop=1&playlist=${videoId}&mute=1`}
-    allow="autoplay; encrypted-media; fullscreen" // Thêm fullscreen ở đây
-    allowFullScreen
-    className="absolute top-1/2 left-1/2 w-full h-full -translate-x-1/2 -translate-y-1/2"
-    style={{ pointerEvents: 'none' }}
-  />
-</div>
-
-
+    <iframe
+      src={`https://www.youtube.com/embed/${videoId}?autoplay=1&controls=0&showinfo=0&rel=0&loop=1&playlist=${videoId}&mute=1`}
+      allow="autoplay; encrypted-media; fullscreen"
+      allowFullScreen
+      className="absolute top-1/2 left-1/2 w-full h-full -translate-x-1/2 -translate-y-1/2"
+      style={{ pointerEvents: 'none' }}
+    />
+  </div>
 );
 
 const backgrounds: Background[] = [
@@ -126,16 +127,18 @@ export function ProductivityAppComponent() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTask, setNewTask] = useState('');
   const { time, isActive, toggleTimer, resetTimer } = useTimer();
-  const rain = useAudio('/music/rain.mp3');
+  const rain = useAudio('/music/rain.mp3', 0.7);
+  // const birds = useAudio('/music/birds.mp3', 0.7);
+  // const water = useAudio('/music/water.mp3', 0.7);
+  // const wind = useAudio('/music/wind.mp3', 0.7);
   const [background, setBackground] = useState<Background>(backgrounds[0]);
   const [youtubeVideoId, setYoutubeVideoId] = useState('');
   const youtubeVideos: YouTubeVideo[] = [
-    { id: 'R6MNlWagZhk', thumbnail: 'https://img.youtube.com/vi/VIDEO_ID_1/hqdefault.jpg' },
-    { id: 'IlC45w0-KGM', thumbnail: 'https://img.youtube.com/vi/VIDEO_ID_2/hqdefault.jpg' },
-    { id: 'JdqL89ZZwFw', thumbnail: 'https://img.youtube.com/vi/VIDEO_ID_3/hqdefault.jpg' },
-    { id: 'JuJZ4tZIuc4', thumbnail: 'https://img.youtube.com/vi/VIDEO_ID_3/hqdefault.jpg' },
-    { id: 'zhDwjnYZiCo', thumbnail: 'https://img.youtube.com/vi/VIDEO_ID_3/hqdefault.jpg' },
-    // Thêm các video khác ở đây
+    { id: 'R6MNlWagZhk', thumbnail: 'https://img.youtube.com/vi/R6MNlWagZhk/hqdefault.jpg' },
+    { id: 'IlC45w0-KGM', thumbnail: 'https://img.youtube.com/vi/IlC45w0-KGM/hqdefault.jpg' },
+    { id: 'JdqL89ZZwFw', thumbnail: 'https://img.youtube.com/vi/JdqL89ZZwFw/hqdefault.jpg' },
+    { id: 'JuJZ4tZIuc4', thumbnail: 'https://img.youtube.com/vi/JuJZ4tZIuc4/hqdefault.jpg' },
+    { id: 'zhDwjnYZiCo', thumbnail: 'https://img.youtube.com/vi/zhDwjnYZiCo/hqdefault.jpg' },
   ];
   
   const addTask = (e: React.FormEvent) => {
@@ -229,7 +232,10 @@ export function ProductivityAppComponent() {
               <h2 className="text-2xl font-semibold mb-4">Ambient Sounds</h2>
               <div className="space-y-4">
                 {[
-                  { name: 'Rain', audio: rain }
+                  { name: 'Rain', audio: rain },
+                  { name: 'Birds', audio: rain },
+                  { name: 'Water', audio: rain },
+                  { name: 'Wind', audio: rain },
                 ].map((sound) => (
                   <div key={sound.name} className="flex items-center justify-between">
                     <span>{sound.name}</span>
@@ -239,17 +245,20 @@ export function ProductivityAppComponent() {
                         variant={sound.audio.isPlaying ? 'outline' : 'default'}
                         onClick={sound.audio.togglePlay}
                       >
-                        {sound.audio.isPlaying ? 'Pause' : 'Play'}
+                        {sound.audio.isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                       </Button>
-                      <Slider
-                        min={0}
-                        max={1}
-                        step={0.01}
-                        value={[sound.audio.volume]}
-                        onValueChange={(value) => sound.audio.setVolume(value[0])}
-                        aria-label={`${sound.name} volume`}
-                        className="w-20"
-                      />
+                      <div className="flex items-center space-x-2">
+                        <Volume2 className="h-4 w-4" />
+                        <Slider
+                          min={0}
+                          max={1}
+                          step={0.01}
+                          value={[sound.audio.volume]}
+                          onValueChange={(value) => sound.audio.adjustVolume(value[0])}
+                          aria-label={`${sound.name} volume`}
+                          className="w-24"
+                        />
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -271,25 +280,21 @@ export function ProductivityAppComponent() {
                 </SelectContent>
               </Select>
               {background.id === 'youtube' && (
-  <Select
-    onValueChange={(value: string) => setYoutubeVideoId(value)}
-    
-  >
-    <SelectTrigger className="w-full">
-      <SelectValue placeholder="Chọn Video YouTube" />
-    </SelectTrigger>
-    <SelectContent>
-      {youtubeVideos.map((video) => (
-        <SelectItem key={video.id} value={video.id} className="flex items-center">
-          <img src={video.thumbnail} alt={`Thumbnail for ${video.id}`} className="w-16 h-16 mr-2" />
-           {/* Hoặc có thể bỏ span này nếu không cần hiển thị id */}
-        </SelectItem>
-      ))}
-    </SelectContent>
-  </Select>
-)}
-
-
+                <Select
+                  onValueChange={(value: string) => setYoutubeVideoId(value)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Choose YouTube Video" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {youtubeVideos.map((video) => (
+                      <SelectItem key={video.id} value={video.id} className="flex items-center">
+                        <img src={video.thumbnail} alt={`Thumbnail for ${video.id}`} className="w-16 h-16 mr-2" />
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
           </div>
         </div>
