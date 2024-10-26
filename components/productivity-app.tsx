@@ -6,12 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CheckCircle, Circle, Play, Pause, RefreshCcw } from 'lucide-react';
-declare module '*.mp3' {
-  const src: string;
-  export default src;
-}
-
-import {rainSound} from '../src/music/rain.mp3'; // Đường dẫn tới file âm thanh rain
 
 interface YouTubeVideo {
   id: string;
@@ -41,21 +35,23 @@ interface Props {
   wind: ReturnType<typeof useAudio>; // Type based on the hook return
 }
 
-const useAudio = (initialVolume = 0.5) => {
+const useAudio = (src: string, initialVolume = 0.5) => {
   const [volume, setVolume] = useState(initialVolume);
   const [isPlaying, setIsPlaying] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null); // Start as null
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    // Ensure this runs only in the client
-    audioRef.current = new Audio(); // Initialize Audio here
-    audioRef.current.loop = true;
-    audioRef.current.volume = volume;
-
+    if (src) {
+      audioRef.current = new Audio(src);
+      audioRef.current.loop = true;
+      audioRef.current.volume = volume;
+      console.log('Audio initialized:', audioRef.current);
+    }
     return () => {
-      audioRef.current?.pause(); // Clean up on unmount
+      audioRef.current?.pause();
     };
-  }, [volume]);
+  }, [src, volume]);
+  
 
   const togglePlay = () => {
     if (audioRef.current) {
@@ -69,9 +65,12 @@ const useAudio = (initialVolume = 0.5) => {
       setIsPlaying(!isPlaying);
     }
   };
+  
+  
 
   return { volume, setVolume, isPlaying, togglePlay, audioRef };
 };
+
 
 const useTimer = (initialTime = 25 * 60) => {
   const [time, setTime] = useState(initialTime);
@@ -127,10 +126,7 @@ export function ProductivityAppComponent() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTask, setNewTask] = useState('');
   const { time, isActive, toggleTimer, resetTimer } = useTimer();
-  const rain = useAudio(rainSound);
-  const birds = useAudio();
-  const water = useAudio();
-  const wind = useAudio();
+  const rain = useAudio('/music/rain.mp3');
   const [background, setBackground] = useState<Background>(backgrounds[0]);
   const [youtubeVideoId, setYoutubeVideoId] = useState('');
   const youtubeVideos: YouTubeVideo[] = [
@@ -233,10 +229,7 @@ export function ProductivityAppComponent() {
               <h2 className="text-2xl font-semibold mb-4">Ambient Sounds</h2>
               <div className="space-y-4">
                 {[
-                  { name: 'Rain', audio: rain },
-                  { name: 'Birds', audio: birds },
-                  { name: 'Water', audio: water },
-                  { name: 'Wind', audio: wind },
+                  { name: 'Rain', audio: rain }
                 ].map((sound) => (
                   <div key={sound.name} className="flex items-center justify-between">
                     <span>{sound.name}</span>
