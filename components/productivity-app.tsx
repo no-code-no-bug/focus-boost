@@ -75,6 +75,7 @@ const useAudio = (src: string, initialVolume = 0.7) => {
   return { volume, adjustVolume, isPlaying, togglePlay };
 };
 
+
 const useTimer = (initialTime = 25 * 60) => {
   const [time, setTime] = useState(initialTime);
   const [isActive, setIsActive] = useState(false);
@@ -93,7 +94,7 @@ const useTimer = (initialTime = 25 * 60) => {
   }, [isActive, time]);
 
   const toggleTimer = () => setIsActive(!isActive);
-  const resetTimer = () => {
+  const resetTimer = (initialTime: number) => {
     setIsActive(false);
     setTime(initialTime);
     clearInterval(intervalRef.current as NodeJS.Timeout);
@@ -122,7 +123,8 @@ const backgrounds: Background[] = [
 export function ProductivityAppComponent() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTask, setNewTask] = useState('');
-  const { time, isActive, toggleTimer, resetTimer } = useTimer();
+  const [customTime, setCustomTime] = useState(25); // Thời gian mặc định là 25 phút
+  const { time, isActive, toggleTimer, resetTimer } = useTimer(customTime * 60);
   const rain = useAudio('/music/rain.mp3', 0.7);
   const birds = useAudio('/music/bird.mp3', 0.7);
   const water = useAudio('/music/water.mp3', 0.7);
@@ -148,6 +150,14 @@ export function ProductivityAppComponent() {
     { id: 'JuJZ4tZIuc4', thumbnail: 'https://img.youtube.com/vi/JuJZ4tZIuc4/hqdefault.jpg' },
     { id: 'zhDwjnYZiCo', thumbnail: 'https://img.youtube.com/vi/zhDwjnYZiCo/hqdefault.jpg' },
   ];
+
+  const handleCustomTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const minutes = parseInt(e.target.value);
+    if (!isNaN(minutes) && minutes >= 1) {
+      setCustomTime(minutes);
+      resetTimer(minutes * 60); // Cập nhật lại thời gian cho timer
+    }
+  };
   
   const [selectedSound, setSelectedSound] = useState<string>('');
 
@@ -235,17 +245,25 @@ export function ProductivityAppComponent() {
 
             <div className="bg-gray-800 bg-opacity-75 p-6 rounded-lg shadow-lg">
               <h2 className="text-2xl font-semibold mb-4">Timer</h2>
-              <div className="text-6xl font-bold text-center mb-4">{formatTime(time)}</div>
-              <div className="flex justify-center space-x-4">
-                <Button onClick={toggleTimer}>
-                  {isActive ? <Pause className="mr-2" /> : <Play className="mr-2" />}
-                  {isActive ? 'Pause' : 'Start'}
-                </Button>
-                <Button onClick={resetTimer} variant="outline">
-                  <RefreshCcw className="mr-2" />
-                  Reset
-                </Button>
+              <div className="flex items-center justify-between mb-4">
+                <div className="text-3xl font-bold">{formatTime(time)}</div>
+                <div>
+                  <Button onClick={toggleTimer} className="mr-2">
+                    {isActive ? <Pause /> : <Play />}
+                  </Button>
+                  <Button onClick={() => resetTimer(customTime * 60)}>
+                    <RefreshCcw />
+                  </Button>
+                </div>
               </div>
+              <Input
+                type="number"
+                value={customTime}
+                onChange={handleCustomTimeChange}
+                className="bg-gray-700"
+                min={1} // Đảm bảo thời gian tối thiểu là 1 phút
+              />
+              <label className="text-sm">Set Timer (minutes)</label>
             </div>
           </div>
 
