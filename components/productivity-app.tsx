@@ -144,11 +144,16 @@ export function ProductivityAppComponent() {
   const [background, setBackground] = useState<Background>(backgrounds[0]);
   const [youtubeVideoId, setYoutubeVideoId] = useState('');
   const youtubeVideos: YouTubeVideo[] = [
-    { id: 'R6MNlWagZhk', thumbnail: 'https://img.youtube.com/vi/R6MNlWagZhk/hqdefault.jpg' },
+    { id: 'QXWeU0oSqzs', thumbnail: 'https://img.youtube.com/vi/QXWeU0oSqzs/hqdefault.jpg' },
+    { id: 'EQnOzVA9ndA', thumbnail: 'https://img.youtube.com/vi/EQnOzVA9ndA/hqdefault.jpg' },
+    { id: 'OO2kPK5-qno', thumbnail: 'https://img.youtube.com/vi/OO2kPK5-qno/hqdefault.jpg' },
+    { id: '4T7HwLGNiuw', thumbnail: 'https://img.youtube.com/vi/4T7HwLGNiuw/hqdefault.jpg' },
     { id: 'IlC45w0-KGM', thumbnail: 'https://img.youtube.com/vi/IlC45w0-KGM/hqdefault.jpg' },
     { id: 'JdqL89ZZwFw', thumbnail: 'https://img.youtube.com/vi/JdqL89ZZwFw/hqdefault.jpg' },
     { id: 'JuJZ4tZIuc4', thumbnail: 'https://img.youtube.com/vi/JuJZ4tZIuc4/hqdefault.jpg' },
     { id: 'zhDwjnYZiCo', thumbnail: 'https://img.youtube.com/vi/zhDwjnYZiCo/hqdefault.jpg' },
+    { id: 'Dbq0Cwcr-_M', thumbnail: 'https://img.youtube.com/vi/Dbq0Cwcr-_M/hqdefault.jpg' },
+    { id: 'G8sXa5i72y8', thumbnail: 'https://img.youtube.com/vi/G8sXa5i72y8/hqdefault.jpg' },
   ];
 
   const handleCustomTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -159,21 +164,6 @@ export function ProductivityAppComponent() {
     }
   };
   
-  const [selectedSound, setSelectedSound] = useState<string>('');
-
-  const handleSoundChange = (soundId: string) => {
-    const sound = soundsList.find((s) => s.id === soundId);
-    if (sound) {
-      // Dừng tất cả âm thanh trước khi phát âm thanh mới
-      soundsList.forEach((s) => {
-        if (s.audio.isPlaying) {
-          s.audio.togglePlay();
-        }
-      });
-      sound.audio.togglePlay(); // Phát âm thanh đã chọn
-      setSelectedSound(soundId);
-    }
-  };
   const addTask = (e: React.FormEvent) => {
     e.preventDefault();
     if (newTask.trim()) {
@@ -192,16 +182,6 @@ export function ProductivityAppComponent() {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const handleBackgroundChange = (value: string) => {
-    const selectedBackground = backgrounds.find(bg => bg.id === value);
-    if (selectedBackground) {
-      setBackground(selectedBackground);
-      if (selectedBackground.id === 'youtube') {
-        setYoutubeVideoId('');
-      }
-    }
   };
 
   return (
