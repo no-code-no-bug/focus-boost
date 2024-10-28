@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CheckCircle, Circle, Play, Pause, RefreshCcw, Volume2 } from 'lucide-react';
+import Image from 'next/image';
+
 
 interface YouTubeVideo {
   id: string;
@@ -15,6 +17,7 @@ interface YouTubeVideo {
 interface YouTubeBackgroundProps {
   videoId: string;
 }
+
 
 interface Task {
   text: string;
@@ -44,13 +47,14 @@ const useAudio = (src: string, initialVolume = 0.7) => {
         audioRef.current = null;
       }
     };
-  }, [src]);
-
+  }, [src, volume]); // Add volume to the dependency array
+  
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume;
     }
-  }, [volume]);
+  }, [volume]); // Including volume in the dependency array
+  
 
   const togglePlay = () => {
     if (audioRef.current) {
@@ -132,16 +136,7 @@ export function ProductivityAppComponent() {
   const nature = useAudio('/music/nature.mp3', 0.7);
   const wood = useAudio('/music/wood.mp3', 0.7);
 
-  const soundsList = [
-    { id: 'rain', name: 'Rain', audio: rain },
-    { id: 'birds', name: 'Birds', audio: birds },
-    { id: 'water', name: 'Water', audio: water },
-    { id: 'wind', name: 'Wind', audio: wind },
-    { id: 'nature', name: 'Nature', audio: nature },
-    { id: 'wood', name: 'Wood', audio: wood },
-  ];
-
-  const [background, setBackground] = useState<Background>(backgrounds[0]);
+  const [background] = useState<Background>(backgrounds[0]);
   const [youtubeVideoId, setYoutubeVideoId] = useState('');
   const youtubeVideos: YouTubeVideo[] = [
     { id: 'QXWeU0oSqzs', thumbnail: 'https://img.youtube.com/vi/QXWeU0oSqzs/hqdefault.jpg' },
@@ -299,7 +294,7 @@ export function ProductivityAppComponent() {
                   <SelectContent>
                     {youtubeVideos.map((video) => (
                       <SelectItem key={video.id} value={video.id} className="flex items-center">
-                        <img src={video.thumbnail} alt={`Thumbnail for ${video.id}`} className="w-16 h-16 mr-2" />
+                        <Image src={video.thumbnail} alt={`Thumbnail for ${video.id}`} width={64} height={64} className="mr-2" />
                       </SelectItem>
                     ))}
                   </SelectContent>
